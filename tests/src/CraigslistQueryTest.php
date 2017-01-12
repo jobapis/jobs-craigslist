@@ -1,19 +1,34 @@
 <?php namespace JobApis\Jobs\Client\Test;
 
-use JobApis\Jobs\Client\Queries\MonsterQuery;
+use JobApis\Jobs\Client\Queries\CraigslistQuery;
 use Mockery as m;
 
-class MonsterQueryTest extends \PHPUnit_Framework_TestCase
+class CraigslistQueryTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var CraigslistQuery
+     */
+    protected $query;
+
     public function setUp()
     {
-        $this->query = new MonsterQuery();
+        $this->query = new CraigslistQuery();
     }
 
-    public function testItCanGetBaseUrl()
+    public function testItCanGetBaseUrlWhenLocationNotSet()
     {
         $this->assertEquals(
-            'http://rss.jobsearch.monster.com/rssquery.ashx',
+            'http://.craigslist.org/search/jjj',
+            $this->query->getBaseUrl()
+        );
+    }
+
+    public function testItCanGetBaseUrlWhenLocationSet()
+    {
+        $location = uniqid();
+        $this->query->set('location', $location);
+        $this->assertEquals(
+            'http://'.$location.'.craigslist.org/search/jjj',
             $this->query->getBaseUrl()
         );
     }
@@ -21,7 +36,7 @@ class MonsterQueryTest extends \PHPUnit_Framework_TestCase
     public function testItCanGetKeyword()
     {
         $keyword = uniqid();
-        $this->query->set('q', $keyword);
+        $this->query->set('query', $keyword);
         $this->assertEquals($keyword, $this->query->getKeyword());
     }
 
@@ -32,20 +47,23 @@ class MonsterQueryTest extends \PHPUnit_Framework_TestCase
 
     public function testItReturnsTrueIfRequiredAttributesPresent()
     {
-        $this->query->set('q', uniqid());
+        $this->query->set('location', uniqid());
 
         $this->assertTrue($this->query->isValid());
     }
 
+    public function testItSetsDefaultAttributes()
+    {
+        $this->assertEquals($this->query->get('format'), 'rss');
+    }
+
     public function testItCanAddAttributesToUrl()
     {
-        $this->query->set('q', uniqid());
-        $this->query->set('where', uniqid());
+        $this->query->set('query', uniqid());
 
         $url = $this->query->getUrl();
 
-        $this->assertContains('q=', $url);
-        $this->assertContains('where=', $url);
+        $this->assertContains('query', $url);
     }
 
     /**
@@ -67,9 +85,9 @@ class MonsterQueryTest extends \PHPUnit_Framework_TestCase
     public function testItSetsAndGetsValidAttributes()
     {
         $attributes = [
-            'q' => uniqid(),
-            'where' => uniqid(),
-            'page' => rand(1,100),
+            'query' => uniqid(),
+            'location' => uniqid(),
+            's' => rand(1,100),
         ];
 
         foreach ($attributes as $key => $value) {
