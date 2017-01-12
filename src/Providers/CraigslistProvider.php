@@ -2,7 +2,7 @@
 
 use JobApis\Jobs\Client\Job;
 
-class MonsterProvider extends AbstractProvider
+class CraigslistProvider extends AbstractProvider
 {
     /**
      * Returns the standardized job object
@@ -20,11 +20,9 @@ class MonsterProvider extends AbstractProvider
             'url' => $payload['link'],
         ]);
 
-        $job->setDatePostedAsString($payload['pubDate']);
-
         // Set a location if it was set in the query
-        if ($this->query && $this->query->get('where')) {
-            $job->setLocation($this->query->get('where'));
+        if ($this->query && $this->query->get('location')) {
+            $job->setLocation($this->query->get('location'));
         }
 
         return $job;
@@ -41,7 +39,6 @@ class MonsterProvider extends AbstractProvider
             'title',
             'link',
             'description',
-            'pubDate',
         ];
     }
 
@@ -62,6 +59,6 @@ class MonsterProvider extends AbstractProvider
      */
     public function getListingsPath()
     {
-        return 'channel.item';
+        return 'item';
     }
 }
